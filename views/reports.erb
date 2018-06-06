@@ -1,0 +1,272 @@
+<!-- Provide a Sales Summary:
+    For each Sales Rep, generate Year to Date, Month to Date, Quarter to Date, and Inception to Date summary of cash amounts sold across all funds. -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Junior Software Developer Code Test</title>
+  </head>
+
+  <body>
+    <h2>Junior Software Developer Code Test</h2>
+    <%
+    hash_row_array = []
+    investor_array = []
+    fund_array = []
+    sales_force = []
+    publics_accounts = []
+    johnstons_accounts = []
+    john_doe_pro = 0
+    jtowros = 0
+    joe_smith = 0
+    public_total = 0
+    public_total_jan = 0
+    public_total_feb = 0
+    public_total_mar = 0
+    public_total_apr = 0
+    johnston_total = 0
+    johnston_total_jan = 0
+    johnston_total_feb = 0
+    johnston_total_mar = 0
+    johnston_total_apr = 0
+    jdp_cash_balance = 0
+    jdp_share_balance = 0
+    jtowros_cash_balance = 0
+    jtowros_share_balance = 0
+    js_cash_balance = 0
+    js_share_balance = 0
+    stock_fund_cash_balance = 0
+    bond_fund_cash_balance = 0
+    @data.each do |d|
+      hash_row = d.to_h
+      hash_row_array.push(hash_row)
+    end
+    hash_row_array.each do |hash|
+      price = hash["TXN_PRICE"]
+      price[0] = ''
+      price_float = price.to_f
+      cash_total = price_float * hash["TXN_SHARES"].to_f
+      # create sales_force array of all sales reps
+      if sales_force.include?(hash["SALES_REP"]) == false
+        sales_force.push(hash["SALES_REP"])
+      end
+      # create investor array of all investors
+      if investor_array.include?(hash["INVESTOR"]) == false
+        investor_array << hash["INVESTOR"]
+      end
+      # create fund array of all funds
+      if fund_array.include?(hash["FUND"]) == false
+        fund_array << hash["FUND"]
+      end
+      # create array of all investors assigned to John Q. Public
+      if hash["SALES_REP"] == sales_force[0]
+        if publics_accounts.include?(hash["INVESTOR"]) == false
+          publics_accounts << hash["INVESTOR"]
+        end
+      # create array of all investors assigned to Daryl "Moose" Johnston
+      elsif hash["SALES_REP"] == sales_force[1]
+        if johnstons_accounts.include?(hash["INVESTOR"]) == false
+          johnstons_accounts << hash["INVESTOR"]
+        end
+      end
+      # calculate cash totals for accounts assigned to John Q. Public
+      if hash["INVESTOR"] == publics_accounts[0]
+        if hash["TXN_TYPE"] == "BUY"
+          john_doe_pro += cash_total
+        end
+      end
+      if hash["INVESTOR"] == publics_accounts[1]
+        if hash["TXN_TYPE"] == "BUY"
+          jtowros += cash_total
+        end
+      end
+      # calculate cash totals for accounts assigned to Daryl "Moose" Johnston
+      if hash["INVESTOR"] == johnstons_accounts[0]
+        if hash["TXN_TYPE"] == "BUY"
+          joe_smith += cash_total
+        end
+      end
+      # calculate monthly cash totals for accounts assigned to John Q. Public
+    if hash["TXN_TYPE"] == "SELL"
+      if hash["SALES_REP"] == sales_force[0]
+        public_total += cash_total
+        if hash["TXN_DATE"].chr == "1"
+          public_total_jan += cash_total
+        elsif hash["TXN_DATE"].chr == "2"
+          public_total_feb += cash_total
+        elsif hash["TXN_DATE"].chr == "3"
+          public_total_mar += cash_total
+        elsif hash["TXN_DATE"].chr == "4"
+          public_total_apr += cash_total
+        end
+      # calculate monthly cash totals for accounts assigned to Daryl "Moose" Johnston
+      elsif hash["SALES_REP"] == sales_force[1]
+        johnston_total += cash_total
+        if hash["TXN_DATE"].chr == "1"
+          johnston_total_jan += cash_total
+        elsif hash["TXN_DATE"].chr == "2"
+          johnston_total_feb += cash_total
+        elsif hash["TXN_DATE"].chr == "3"
+          johnston_total_mar += cash_total
+        elsif hash["TXN_DATE"].chr == "4"
+          johnston_total_apr += cash_total
+        end
+      end
+    end
+    # calculate cash balances for investors
+    if hash["INVESTOR"] == investor_array[0] && hash["TXN_TYPE"] == "SELL"
+      jdp_cash_balance += cash_total - john_doe_pro
+    elsif hash["INVESTOR"] == investor_array[1] && hash["TXN_TYPE"] == "SELL"
+      jtowros_cash_balance += cash_total - jtowros
+    elsif hash["INVESTOR"] == investor_array[2] && hash["TXN_TYPE"] == "SELL"
+      js_cash_balance += cash_total - joe_smith
+    end
+    # calculate share balances for investors
+    if hash["INVESTOR"] == investor_array[0] && hash["TXN_TYPE"] == "BUY"
+      jdp_share_balance += hash["TXN_SHARES"].to_f
+    elsif hash["INVESTOR"] == investor_array[0] && hash["TXN_TYPE"] == "SELL"
+      jdp_share_balance -= hash["TXN_SHARES"].to_f
+    end
+    if hash["INVESTOR"] == investor_array[1] && hash["TXN_TYPE"] == "BUY"
+      jtowros_share_balance += hash["TXN_SHARES"].to_f
+    elsif hash["INVESTOR"] == investor_array[1] && hash["TXN_TYPE"] == "SELL"
+      jtowros_share_balance -= hash["TXN_SHARES"].to_f
+    end
+    if hash["INVESTOR"] == investor_array[2] && hash["TXN_TYPE"] == "BUY"
+      js_share_balance += hash["TXN_SHARES"].to_f
+    elsif hash["INVESTOR"] == investor_array[2] && hash["TXN_TYPE"] == "SELL"
+      js_share_balance -= hash["TXN_SHARES"].to_f
+    end
+    # calculate cash balances for the funds
+    if hash["FUND"] == fund_array[0] && hash["TXN_TYPE"] == "BUY"
+      stock_fund_cash_balance -= cash_total
+    elsif hash["FUND"] == fund_array[0] && hash["TXN_TYPE"] == "SELL"
+      stock_fund_cash_balance += cash_total
+    end
+    if hash["FUND"] == fund_array[1] && hash["TXN_TYPE"] == "BUY"
+      bond_fund_cash_balance -= cash_total
+    elsif hash["FUND"] == fund_array[1] && hash["TXN_TYPE"] == "SELL"
+      bond_fund_cash_balance += cash_total
+    end
+  end
+ %>
+
+ <ul>
+
+ <!-- Provide a Sales Summary:
+     For each Sales Rep, generate Year to Date, Month to Date, Quarter to Date, and Inception to Date summary of cash amounts
+     sold across all funds. -->
+  <h3><strong>Sales Summary</strong></h3>
+    <h4><%= sales_force[0] %></h4>
+      <ul>
+        <li><%= "Inception to date: $#{public_total.round(2)}" %></li>
+        <li><%= "YTD: $#{public_total.round(2)}" %></li>
+        <li><%= "January: $#{public_total_jan.round(2)}" %></li>
+        <li><%= "February: $#{public_total_feb.round(2)}" %></li>
+        <li><%= "March: $#{public_total_mar.round(2)}" %></li>
+        <li><%= "First Quarter: $#{public_total_jan.round(2) + public_total_feb.round(2) + public_total_mar.round(2)}" %></li>
+        <li><%= "April: $#{public_total_apr.round(2)}" %></li>
+      </ul>
+    <h4><%= sales_force[1] %></h4>
+      <ul>
+        <li><%= "Inception to date: $#{johnston_total.round(2)}" %></li>
+        <li><%= "YTD: $#{johnston_total.round(2)}" %></li>
+        <li><%= "January: $#{johnston_total_jan.round(2)}" %></li>
+        <li><%= "February: $#{johnston_total_feb.round(2)}" %></li>
+        <li><%= "March: $#{johnston_total_mar.round(2)}" %></li>
+        <li><%= "First Quarter: $#{johnston_total_jan.round(2) + johnston_total_feb.round(2) + johnston_total_mar.round(2)}" %></li>
+        <li><%= "April: $#{johnston_total_apr.round(2)}" %></li>
+      </ul>
+<!-- Provide an Assets Under Management Summary:
+For each Sales Rep, generate a summary of the net amount held by investors across all funds. -->
+<h3><strong>Assets Under Management Summary</strong></h3>
+  <h4><%="  - Sales Rep: John Q. Public" %></h4>
+    <ul>
+      <li><%= "#{publics_accounts[0]}: $#{john_doe_pro.round(2)}" %></li>
+      <li><%= "#{publics_accounts[1]}: $#{jtowros.round(2)}" %></li>
+
+    </ul>
+  <br>
+  <h4><%="  - Sales Rep: Daryl 'Moose' Johnston" %></h4>
+    <ul>
+      <li><%= "#{johnstons_accounts[0]}: $#{joe_smith.round(2)}" %></li>
+    </ul>
+
+<!--Break Report: Assuming the information in the data provided is complete and accurate, generate a report that shows any
+errors (negative cash balances, negative share balance) by investor. -->
+<h3><strong>Break Reports</strong></h3>
+  <h4><%= investor_array[0] %></h4>
+  <ul>
+    <li><%= "Negative Cash Balances:" %></li>
+    <% if jdp_cash_balance < 0 %>
+      <%= jdp_cash_balance.round(2) %>
+      <% else %>
+      <%= "None" %>
+    <% end %>
+    <li><%= "Negative Share Balances:" %></li>
+    <% if jdp_share_balance < 0 %>
+      <%= jdp_share_balance.round(2) %>
+      <% else %>
+      <%= "None" %>
+    <% end %>
+</ul>
+<h4><%= investor_array[1] %></h4>
+<ul>
+  <li><%= "Negative Cash Balances: " %></li>
+  <% if jtowros_cash_balance < 0 %>
+    <%= jtowros_cash_balance.round(2) %>
+    <% else %>
+    <%= "None" %>
+  <% end %>
+  <li><%= "Negative Share Balances:" %></li>
+  <% if jtowros_share_balance < 0 %>
+    <%= jtowros_share_balance.round(2) %>
+    <% else %>
+    <%= "None" %>
+  <% end %>
+</ul>
+<h4><%= investor_array[2] %></h4>
+<ul>
+  <li><%= "Negative Cash Balances: " %></li>
+  <% if js_cash_balance < 0 %>
+    <%= js_cash_balance.round(2) %>
+    <% else %>
+    <%= "None" %>
+  <% end %>
+  <li><%= "Negative Share Balances:" %></li>
+  <% if js_share_balance < 0 %>
+    <%= js_share_balance.round(2) %>
+    <% else %>
+    <%= "None" %>
+  <% end %>
+</ul>
+<!-- Investor Profit: For each Investor and Fund, return net profit or loss on investment. -->
+<h3><strong>Investor Profit</strong></h3>
+  <h4><%= investor_array[0] %></h4>
+    <ul>
+      <li><%= "Net Profit/Loss" %></li>
+        <%= jdp_cash_balance.round(2) %>
+    </ul>
+  <h4><%= investor_array[1] %></h4>
+    <ul>
+      <li><%= "Net Profit/Loss" %></li>
+        <%= jtowros_cash_balance.round(2) %>
+    </ul>
+  <h4><%= investor_array[2] %></h4>
+    <ul>
+      <li><%= "Net Profit/Loss" %></li>
+        <%= js_cash_balance.round(2) %>
+    </ul>
+  <h4><%= fund_array[0] %></h4>
+    <ul>
+      <li><%= "Net Profit/Loss" %></li>
+        <%= stock_fund_cash_balance.round(2) %>
+    </ul>
+  <h4><%= fund_array[1] %></h4>
+    <ul>
+      <li><%= "Net Profit/Loss" %></li>
+        <%= bond_fund_cash_balance.round(2) %>
+    </ul>
+    <p><a href="/">Back</a></p>
+  </body>
+</html>
